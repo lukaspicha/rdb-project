@@ -6,7 +6,7 @@ use Nette;
 use Nette\Application\UI\Form;
 
 
-class ImportDataFormFactory
+class ExportDataFormFactory
 {
 	use Nette\SmartObject;
 
@@ -27,19 +27,16 @@ class ImportDataFormFactory
 	{
 		$form = $this->factory->create();
 
-		$form->addUpload('csv_file', 'CSV soubor k importu:');
-
 		$tables = [
 			'Jizda' => "Jízda",
 			"Ridic"	=> "Řidič",
 			"Mezizastavka" => "Mezizastávky",
-			'Klient'		=> 'Klient',
 		];
-		$form->addRadioList('table', 'Tabulka:', $tables);
+		$form->addCheckboxList('table', 'Tabulka:', $tables);
+		
+		$form->addCheckbox('with_header', 'Vložit hlavičkové řádky');
 
-		$form->addCheckbox('with_header', 'CSV obsahuje hlavičkový řádek');
-
-		$form->addSubmit('import', 'Import');
+		$form->addSubmit('import', 'Export');
 
 		return $form;
 	}
