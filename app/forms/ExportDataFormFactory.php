@@ -28,11 +28,11 @@ class ExportDataFormFactory
 		$form = $this->factory->create();
 
 		$dbStructureHelper = new Helpers\DBStructure();
-		$form->addCheckboxList('table', 'Tabulka:', $dbStructureHelper->getTables());
+		$form->addCheckboxList('tables', 'Tabulka:', $dbStructureHelper->getTables());
 		
 		$form->addCheckbox('with_header', 'Vložit hlavičkové řádky');
 
-		$form->addSubmit('import', 'Export');
+		$form->addSubmit('export', 'Export');
 
 		return $form;
 	}

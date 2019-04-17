@@ -5,11 +5,6 @@ namespace App\Helpers;
  
 class DBStructure {
     
-	
-
-	public function __construct() {
-	}
-
 	private $structure = [
 		'Autobus' => [
 			'spz',
@@ -62,6 +57,9 @@ class DBStructure {
 		],
 	];
 
+	public function __construct() {
+
+	}
 
 	public function getTables() {
 		$tmp = array_keys($this->structure);		
