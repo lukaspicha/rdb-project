@@ -45,8 +45,11 @@ class DataModel {
 		foreach ($tables as $tableName) {
 			try {
 				$tableRs = $this->db->table($tableName)->fetchAll();
+				if($with_header) {
+					$return[$tableName][] = $this->dbStructureHelper->getColumnsForTable($tableName);
+				}
 				foreach ($tableRs as $tableRowRs) {
-					$return[$tableName][] = $with_header ? $tableRowRs->toArray() : array_values($tableRowRs->toArray());
+					$return[$tableName][] = array_values($tableRowRs->toArray());
 				}
 			} catch (\PDOException $e) {
 				 // LOG
