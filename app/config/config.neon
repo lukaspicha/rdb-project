@@ -25,8 +25,11 @@ database:
 
 services:
 	- App\Model\UserManager
+	- App\Model\CsvParser
+	- App\Model\DataModel
 	- App\Forms\FormFactory
 	- App\Forms\SignInFormFactory
 	- App\Forms\SignUpFormFactory
+	- App\Forms\ExportDataFormFactory
 	- App\Forms\ImportDataFormFactory
 	router: App\RouterFactory::createRouter
