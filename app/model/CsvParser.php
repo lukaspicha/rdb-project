@@ -40,4 +40,19 @@ class CsvParser {
 		}
 	}
 
+	public function writeToCsv($data = [], $filename,  $encoding = 'UTF-8', $delimeter = ';') {
+
+		try {
+			$fp = fopen("exports/" . $filename, 'w');
+			foreach($data as $row) {
+				fputcsv($fp, $row, $delimeter);
+			}
+			fclose($fp);
+			return true;
+		} catch (Exception $e) {
+			return false;
+		}
+			
+	}
+
 }
