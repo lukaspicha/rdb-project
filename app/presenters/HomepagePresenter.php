@@ -58,9 +58,6 @@ class HomepagePresenter extends BasePresenter
         return $form;
     }
 
-
-
-
     public function importData(Form $form) {
     	
     	$values = $form->getValues();
@@ -79,16 +76,19 @@ class HomepagePresenter extends BasePresenter
     	$this->flashMessage("Bylo naimportováno " . $result . " řádků");
     	$this->redirect('this');	
     	
-    	
-
-
     }
 
     public function exportData(Form $form) {
     	$values = $form->getValues();
     	$exportedData = $this->dataModel->exportData($values->tables, $values->with_header);
 
-        
+        foreach ($exportedData as $table => $data) { 
+            try {
+                $this->csvParser->writeToCsv($data, $table . ".csv");
+            } catch (Exception $e) {
+                // LOG
+            }
+        }
 
         $this->redirect('this');
     	
