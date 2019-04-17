@@ -40,5 +40,21 @@ class DataModel {
 	}
 
 
+	public function exportData($tables = [], bool $with_header = true) {
+		$return = [];
+		foreach ($tables as $tableName) {
+			try {
+				$tableRs = $this->db->table($tableName)->fetchAll();
+				foreach ($tableRs as $tableRowRs) {
+					$return[$tableName][] = $with_header ? $tableRowRs->toArray() : array_values($tableRowRs->toArray());
+				}
+			} catch (\PDOException $e) {
+				 // LOG
+			}
+		}		
+		return $return;
+
+	} 
+
 }
 ?>
