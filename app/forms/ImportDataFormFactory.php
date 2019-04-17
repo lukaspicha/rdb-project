@@ -4,6 +4,7 @@ namespace App\Forms;
 
 use Nette;
 use Nette\Application\UI\Form;
+use App\Helpers;
 
 
 class ImportDataFormFactory
@@ -29,13 +30,8 @@ class ImportDataFormFactory
 
 		$form->addUpload('csv_file', 'CSV soubor k importu:');
 
-		$tables = [
-			'Jizda' => "Jízda",
-			"Ridic"	=> "Řidič",
-			"Mezizastavka" => "Mezizastávky",
-			'Klient'		=> 'Klient',
-		];
-		$form->addRadioList('table', 'Tabulka:', $tables);
+		$dbStructureHelper = new Helpers\DBStructure();
+		$form->addRadioList('table', 'Tabulka:', $dbStructureHelper->getTables());
 
 		$form->addCheckbox('with_header', 'CSV obsahuje hlavičkový řádek');
 

@@ -4,7 +4,7 @@ namespace App\Forms;
 
 use Nette;
 use Nette\Application\UI\Form;
-
+use App\Helpers;
 
 class ExportDataFormFactory
 {
@@ -27,12 +27,8 @@ class ExportDataFormFactory
 	{
 		$form = $this->factory->create();
 
-		$tables = [
-			'Jizda' => "Jízda",
-			"Ridic"	=> "Řidič",
-			"Mezizastavka" => "Mezizastávky",
-		];
-		$form->addCheckboxList('table', 'Tabulka:', $tables);
+		$dbStructureHelper = new Helpers\DBStructure();
+		$form->addCheckboxList('table', 'Tabulka:', $dbStructureHelper->getTables());
 		
 		$form->addCheckbox('with_header', 'Vložit hlavičkové řádky');
 
