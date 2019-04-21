@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.23)
 # Database: bus_traveling
-# Generation Time: 2019-04-16 13:14:45 +0000
+# Generation Time: 2019-04-21 09:41:48 +0000
 # ************************************************************
 
 
@@ -61,15 +61,11 @@ CREATE TABLE `Jizda` (
 DROP TABLE IF EXISTS `Jizdenka`;
 
 CREATE TABLE `Jizdenka` (
-  `linka` varchar(50) NOT NULL DEFAULT '',
-  `cas` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `email` varchar(50) DEFAULT '',
-  `cislo` int(11) NOT NULL,
-  PRIMARY KEY (`cislo`),
-  KEY `linka` (`linka`),
-  KEY `email` (`email`),
-  CONSTRAINT `jizdenka_ibfk_1` FOREIGN KEY (`linka`) REFERENCES `Jizda` (`linka`),
-  CONSTRAINT `jizdenka_ibfk_2` FOREIGN KEY (`email`) REFERENCES `Klient` (`email`)
+  `cislo` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `cas` timestamp NULL DEFAULT NULL,
+  `email` varchar(50) DEFAULT NULL,
+  `linka` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`cislo`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -176,6 +172,16 @@ CREATE TABLE `TypKontaktu` (
   PRIMARY KEY (`typ`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+LOCK TABLES `TypKontaktu` WRITE;
+/*!40000 ALTER TABLE `TypKontaktu` DISABLE KEYS */;
+
+INSERT INTO `TypKontaktu` (`typ`)
+VALUES
+	('email'),
+	('telefon');
+
+/*!40000 ALTER TABLE `TypKontaktu` ENABLE KEYS */;
+UNLOCK TABLES;
 
 
 # Dump of table Znacka
