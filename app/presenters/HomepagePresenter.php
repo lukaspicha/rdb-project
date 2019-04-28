@@ -49,11 +49,18 @@ class HomepagePresenter extends BasePresenter
 	{  
 
         try {
-            $table = $this->db->table("Jizdenka")->fetchAll();
+            $tblName = "Klient";
+            $table = $this->db->table($tblName)->fetchAll();
             $binImage = new Model\BinImage($this->context->getParameters()["wwwDir"] . "/watermark/TrollFace.jpg");
             $binImage->writeToFile("TrollFace.txt");
             $watermark = new Model\Watermark($binImage);
-            $watermark->run($table);
+            //$watermark->run($table);
+            
+            if($watermark->isDataWaterMarked($table)) {
+                dump($tblName . " is watermarked");
+            } else {
+                 dump($tblName . " is not  watermarked");
+            }
 
         } catch (\Exception $e) {
             echo $e->getMessage();
