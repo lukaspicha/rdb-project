@@ -18,8 +18,8 @@ class DBStructure {
 		],
 		'Jizdenka' => [
 			'linka',
-			'cas',
 			'email',
+			'cas',
 			'cislo',
 		],
 		'Klient' => [
@@ -29,8 +29,8 @@ class DBStructure {
 		],
 		'Kontakt' => [
 			'hodnota',
-			'cislo_rp',
 			'typ',
+			'cislo_rp',
 		],
 		'Lokalita' => [
 			'nazev',

@@ -1,8 +1,8 @@
 <?php
-
 namespace App\Model;
 use Nette;
 use App\Helpers;
+use Tracy\ILogger;
  
 class DataModel {
     
@@ -11,32 +11,35 @@ class DataModel {
 
 	protected $dbStructureHelper;
 
-	public function __construct(Nette\Database\Context $db) {
+	 /** @var ILogger @inject */
+    private $logger;
+
+	public function __construct(Nette\Database\Context $db, ILogger $logger) {
 		$this->db = $db;
+		$this->logger = $logger;
 		$this->dbStructureHelper  = new Helpers\DBStructure();
 	}
 	
 	public function importData(string $tableName, $data = [], bool $with_header = true)  {
 		$columnNames = $this->dbStructureHelper->getColumnsForTable($tableName);
-    	$insert = [];
+    	$total = 0;
+    	$ok = 0;
     	foreach ($data as $line) {
 			if($with_header) {
 				$with_header = false;
-				// $columnsNames = $line; // Pokud by hlavicka obsahovala primo
+				$columnsNames = $line;
 			} else {
-				$insert[] = array_combine($columnNames, $line);
+				try {
+					$this->db->table($tableName)->insert(array_combine($columnNames, $line));
+					$ok++;
+				} catch (\PDOException $e) {
+					 $this->logger->log($e->getMessage(), ILogger::EXCEPTION);   
+				}
+				$total++;
 			}
     	}
 
-    	if(count($insert)) {
-    		try {
-    			return $this->db->table($tableName)->insert($insert);
-    		} catch (\PDOException $e) {
-    			// LOG
-    		}
-    		
-    	}
-    	return 0;
+    	return [$ok, $total];
 	}
 
 
