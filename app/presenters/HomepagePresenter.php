@@ -8,7 +8,7 @@ use App\Model;
 use Nette\Application\UI\Form;
 
 use Tracy\Debugger;
-
+use Tracy\ILogger;
 class HomepagePresenter extends BasePresenter
 {
 
@@ -28,6 +28,11 @@ class HomepagePresenter extends BasePresenter
 
     protected $csvParser;
 
+    /** @var ILogger @inject */
+    private $logger;
+
+
+
 	public function __construct(Forms\ExportDataFormFactory $exportDataFormFactory, Forms\ImportDataFormFactory $importDataFormFactory, Nette\Database\Context $db) {
 		$this->exportDataFormFactory = $exportDataFormFactory;
 		$this->importDataFormFactory = $importDataFormFactory;
@@ -39,9 +44,20 @@ class HomepagePresenter extends BasePresenter
 		
 	}
 
+   
 	public function renderDefault()
-	{
+	{  
 
+        try {
+            $table = $this->db->table("Jizdenka")->fetchAll();
+            $binImage = new Model\BinImage($this->context->getParameters()["wwwDir"] . "/watermark/TrollFace.jpg");
+            $binImage->writeToFile("TrollFace.txt");
+            $watermark = new Model\Watermark($binImage);
+            $watermark->run($table);
+
+        } catch (\Exception $e) {
+            echo $e->getMessage();
+        }
 	}
 
 	protected function createComponentExportDataForm()

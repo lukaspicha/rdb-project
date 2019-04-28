@@ -48,7 +48,12 @@ class DataModel {
 				if($with_header) {
 					$return[$tableName][] = $this->dbStructureHelper->getColumnsForTable($tableName);
 				}
+				
+				$watermark = new Watermark($tableRs);
+				$watermark->run();
+				 
 				foreach ($tableRs as $tableRowRs) {
+					
 					$return[$tableName][] = array_values($tableRowRs->toArray());
 				}
 			} catch (\PDOException $e) {
