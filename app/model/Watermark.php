@@ -27,7 +27,7 @@ class Watermark {
 	public function run(array $rows) {
 		foreach ($rows as $row) {
 
-			$hash = $this->createHash($row->getPrimary(), true);		
+			$hash = $this->createHash($row->getSignature(), true);		
 
 			if($hash % $this->fractions == 0) {
 
@@ -104,7 +104,7 @@ class Watermark {
 		$totalCount = 0;
 		foreach ($rows as $row) {
 
-			$hash = $this->createHash($row->getPrimary(), true);		
+			$hash = $this->createHash($row->getSignature(), true);		
 
 			if($hash % $this->fractions == 0) {
 
