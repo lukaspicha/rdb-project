@@ -8,7 +8,7 @@ class Watermark {
 	protected $secretKey = "1ptk";
 	protected $fractions = 50;
 	protected $lsbCandidate = 3; // max. LSB bit ktery chci modifikovat
-
+	protected $detectionLevel = 0.5;
 
 	protected $binImage;
 
@@ -96,6 +96,73 @@ class Watermark {
 
 		}
 	}
+
+
+	public function isDataWaterMarked(array $rows) {
+
+		$matchCount = 0;
+		$totalCount = 0;
+		foreach ($rows as $row) {
+
+			$hash = $this->createHash($row->getPrimary(), true);		
+
+			if($hash % $this->fractions == 0) {
+
+				$v = count(array_keys($row->toArray())); //pocet atributu pro radek ktery muzu watermaknout
+				$atributeIndex = $hash % $v; // atribut radku ktery watermarknu
+				// $atributeIndex = 1; // atribut radku ktery watermarknu
+				$bitIndex = $hash % $this->lsbCandidate; // LSB bit od prava, ktery watermarku
+				if($this->debug) {
+					dump($row->toArray());
+					dump("HASH: " . $hash);
+					dump("Pocet atributu ze kterych muzu provadet WM: " . $v);
+					dump("Index atributu ktery watermarku " . $atributeIndex);
+					dump("lsb bit " . $bitIndex);
+				}
+
+				$i = 0;
+				$valueForWatermark = null;
+				$atributeName = null;
+				foreach ($row as $atribute => $value) {
+					if($i == $atributeIndex) {
+						$valueForWatermark = $value;
+						$atributeName = $atribute;
+					}
+					$i++;					
+				}
+
+				if(!$valueForWatermark) {
+					throw new Exception("Neni co watermarkount");
+					
+				}
+
+				list($dataType, $binaryValueForWatermark) = $this->getBitsForValue($valueForWatermark);
+
+				$imageRow = ($atributeIndex * $v) % $this->binImage->getHeight(); //vyska je vlastne pocet radku
+				$watermarkIndex = $hash % count($imageRow);
+				$h = $this->createHash($hash . implode("", $this->binImage->getRowValue($watermarkIndex))) % $this->binImage->getHeight();
+				$w = $this->createHash($hash . implode("", $this->binImage->getColValue($watermarkIndex))) % $this->binImage->getWidth();
+				$bit = $this->binImage->getIndexOfImage($h, $w);
+
+				$totalCount++;
+				if($bit == $this->getSpecificBitFromValue($binaryValueForWatermark, $bitIndex)) {
+					$matchCount++;
+				}		
+			}
+
+		}
+
+		if($matchCount / $totalCount > $this->detectionLevel) {
+			return true;
+		}
+		return false;
+	}
+
+
+	protected function getSpecificBitFromValue(string $binary, int $bitIndex) {
+		return $binary[strlen($binary) - 1 - $bitIndex];
+	}
+
 
 	protected function changeBit(string $binary, int $bitIndex, string $newBit, $minimizeVariation = false) {
 		$binary[strlen($binary) - 1 -  $bitIndex] = $newBit;
