@@ -34,6 +34,37 @@ class BinImage {
 		return $this->ok;
 	}
 
+    //Only for debugging
+    public function writeToFile(string $name) {
+        $file = "watermark/" . $name;
+        if(file_exists($file)) {
+            unlink($file);
+        }
+
+        foreach ($this->data as $row) {
+            file_put_contents($file, implode("", $row) . "\n", FILE_APPEND);
+        }
+    }
+
+
+    public function getIndexOfImage(int $row, int $col) {
+        return $this->data[$row][$col];
+    }
+
+
+    public function getRowValue(int $row) {
+        return $this->data[$row];
+    }
+
+
+    public function getColValue(int $col) {
+        $colValue = [];
+        foreach ($this->data as $row) {
+            $colValue[] = $row[$col];
+        }
+        return $colValue;
+    }
+
 
 	// https://stackoverflow.com/questions/48031293/how-to-convert-image-to-binary-string-using-php-and-file-upload
     protected function img2Bin($scale = 100, $fudge = 0) {
@@ -95,8 +126,7 @@ class BinImage {
                     $line[] = "0";
                 }
             }
-            $lineString = implode('', $line);
-            $this->data[] = $lineString;
+            $this->data[] = $line;
         }
 
         if(count($this->data) && $this->width > 0 && $this->height > 0) {
