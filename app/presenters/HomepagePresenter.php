@@ -5,6 +5,7 @@ namespace App\Presenters;
 use Nette;
 use App\Forms;
 use App\Model;
+use App\Helpers;
 use Nette\Application\UI\Form;
 
 use Tracy\Debugger;
@@ -33,12 +34,14 @@ class HomepagePresenter extends BasePresenter
 
 
 
-	public function __construct(Forms\ExportDataFormFactory $exportDataFormFactory, Forms\ImportDataFormFactory $importDataFormFactory, Nette\Database\Context $db) {
+
+
+	public function __construct(Forms\ExportDataFormFactory $exportDataFormFactory, Forms\ImportDataFormFactory $importDataFormFactory, Nette\Database\Context $db, ILogger $logger) {
 		$this->exportDataFormFactory = $exportDataFormFactory;
 		$this->importDataFormFactory = $importDataFormFactory;
 		$this->db = $db;
 
-		$this->dataModel = new Model\DataModel($this->db);
+		$this->dataModel = new Model\DataModel($this->db, $logger);
         $this->csvParser = new Model\CsvParser();
 
 		
@@ -49,19 +52,32 @@ class HomepagePresenter extends BasePresenter
 	{  
 
         try {
-            $tblName = "Klient";
-            $table = $this->db->table($tblName)->fetchAll();
+
+            $dbStructureHelper = new Helpers\DBStructure();
+
             $binImage = new Model\BinImage($this->context->getParameters()["wwwDir"] . "/watermark/TrollFace.jpg");
             $binImage->writeToFile("TrollFace.txt");
             $watermark = new Model\Watermark($binImage);
-            //$watermark->run($table);
-            
-            if($watermark->isDataWaterMarked($table)) {
-                dump($tblName . " is watermarked");
-            } else {
-                 dump($tblName . " is not  watermarked");
-            }
 
+            foreach ($dbStructureHelper->getSettingsForWatermarking() as $tblName => $numericsAtributtes) {
+                $table = $this->db->table($tblName)
+                            ->fetchAll();
+
+                if (true) {
+                    $watermark->run($table, $numericsAtributtes);
+                }
+
+                if (false) {
+                    if($watermark->isDataWaterMarked($table, $numericsAtributtes)) {
+                        dump($tblName . " is watermarked");
+                    } else {
+                        dump($tblName . " is not  watermarked");
+                    }
+                }
+                    
+            }
+                
+        
         } catch (\Exception $e) {
             echo $e->getMessage();
         }
@@ -87,16 +103,16 @@ class HomepagePresenter extends BasePresenter
     	$this->csvParser = new Model\CsvParser();
 
     	if($values->csv_file->isOk()) {
-    		$this->csvParser->importFile($values->csv_file->getTemporaryFile(), 'UTF-8', ",");
+    		$this->csvParser->importFile($values->csv_file->getTemporaryFile(), '', ",");
 
     	} else {
     		Debugger::log('Chyba souboru ' . $values->csv_file->getFileName() . ' pri importu');
     	}
 
     	
-    	$result = $this->dataModel->importData($values->table, $this->csvParser->getData(), $values->with_header);
+    	list($ok, $total) = $this->dataModel->importData($values->table, $this->csvParser->getData(), $values->with_header);
 
-    	$this->flashMessage("Bylo naimportováno " . $result . " řádků");
+    	$this->flashMessage("Bylo naimportováno " . $ok .  "/" . $total . " řádků");
     	$this->redirect('this');	
     	
     }
