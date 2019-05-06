@@ -14,6 +14,8 @@ class DataModel {
 	 /** @var ILogger @inject */
     private $logger;
 
+    private const MULTIPLY = 100000;
+
 	public function __construct(Nette\Database\Context $db, ILogger $logger) {
 		$this->db = $db;
 		$this->logger = $logger;
@@ -30,10 +32,14 @@ class DataModel {
 				$columnsNames = $line;
 			} else {
 				try {
-					$this->db->table($tableName)->insert(array_combine($columnNames, $line));
+					$insert = array_combine($columnNames, $line);
+					if(array_key_exists("cas", $insert)) {
+						$insert["cas"] = (float)($insert["cas"] * self::MULTIPLY);
+					}
+					$this->db->table($tableName)->insert($insert);
 					$ok++;
 				} catch (\PDOException $e) {
-					 $this->logger->log($e->getMessage(), ILogger::EXCEPTION);   
+					$this->logger->log($e->getMessage(), ILogger::EXCEPTION);   
 				}
 				$total++;
 			}
