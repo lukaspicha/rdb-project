@@ -71,9 +71,6 @@ class DBStructure {
 			'Jizda' => [
 				'cas',
 			], 
-			'Jizdenka' => [
-				'cas',
-			],
 		];
 	}
 
