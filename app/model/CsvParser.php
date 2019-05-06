@@ -27,7 +27,7 @@ class CsvParser {
             while (($data = fgetcsv($fp, 10000000, $delimeter)) !== FALSE) {
 		        if ($encoding != 'UTF-8') {
 		        	foreach($data as $columName => $value) {
-		        		$data[$columName] = iconv($encoding, "UTF-8", $value);
+		        		$data[$columName] = str_replace("\\n", "", $value);
 		        	}
 		        }
 		        $newdata[] = $data;
@@ -45,7 +45,7 @@ class CsvParser {
 		try {
 			$fp = fopen("exports/" . $filename, 'w');
 			foreach($data as $row) {
-				fputcsv($fp, $row, $delimeter);
+				fputcsv($fp, $row, $delimeter, "\n");
 			}
 			fclose($fp);
 			return true;
