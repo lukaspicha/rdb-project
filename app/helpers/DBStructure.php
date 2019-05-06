@@ -66,6 +66,17 @@ class DBStructure {
 		return array_combine($tmp, $tmp);
 	}
 
+	public function getSettingsForWatermarking() {
+		return [
+			'Jizda' => [
+				'cas',
+			], 
+			'Jizdenka' => [
+				'cas',
+			],
+		];
+	}
+
 	public function getColumnsForTable(string $table) {
 		return $this->structure[$table];
 	}
