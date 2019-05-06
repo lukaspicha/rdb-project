@@ -7,7 +7,7 @@ class Watermark {
 
 	protected $secretKey = "1ptk";
 	protected $fractions = 50;
-	protected $lsbCandidate = 3; // max. LSB bit ktery chci modifikovat
+	protected $lsbCandidate = 5; // max. LSB bit ktery chci modifikovat
 	protected $detectionLevel = 0.5;
 
 	protected $binImage;
@@ -15,6 +15,9 @@ class Watermark {
 	private const TYPE_STRING = 'string';
 	private const TYPE_INT = 'int';
 	private const TYPE_DATETIME = 'datetime';
+
+	private const MULTIPLY = 100000;
+	private const BIT_MOVE = 19;
 
 	private $debug = false;
 
@@ -24,17 +27,22 @@ class Watermark {
 
 
 
-	public function run(array $rows) {
+	public function run(array $rows, array $numericsAtributtes) {
 		foreach ($rows as $row) {
 
-			$hash = $this->createHash($row->getSignature(), true);		
+			if($this->debug) {
+				dump($row->getSignature());
+			}
 
-			if($hash % $this->fractions == 0) {
+			$hash = $this->createHash($row->getSignature(), true);	
 
-				$v = count(array_keys($row->toArray())); //pocet atributu pro radek ktery muzu watermaknout
+			if($hash % $this->fractions) {
+
+				$v = count($numericsAtributtes); //pocet atributu pro radek ktery muzu watermaknout
 				$atributeIndex = $hash % $v; // atribut radku ktery watermarknu
 				// $atributeIndex = 1; // atribut radku ktery watermarknu
-				$bitIndex = $hash % $this->lsbCandidate; // LSB bit od prava, ktery watermarku
+				$bitIndex = ($hash % $this->lsbCandidate) + self::BIT_MOVE; // LSB bit od prava, ktery watermarku
+				//$bitIndex = 23;
 				if($this->debug) {
 					dump($row->toArray());
 					dump("HASH: " . $hash);
@@ -45,20 +53,19 @@ class Watermark {
 
 				$i = 0;
 				$valueForWatermark = null;
-				$atributeName = null;
-				foreach ($row as $atribute => $value) {
-					if($i == $atributeIndex) {
-						$valueForWatermark = $value;
-						$atributeName = $atribute;
-					}
-					$i++;					
+				$atributeName = $numericsAtributtes[$atributeIndex];
+				$valueForWatermark = $row[$atributeName];
+
+				if ($this->debug) {
+					dump("atribute: " . $atributeName);
+					dump("Data k WM: " . $valueForWatermark);
 				}
 
 				if(!$valueForWatermark) {
 					throw new Exception("Neni co watermarkount");
 					
 				}
-
+		
 				list($dataType, $binaryValueForWatermark) = $this->getBitsForValue($valueForWatermark);
 
 				$imageRow = ($atributeIndex * $v) % $this->binImage->getHeight(); //vyska je vlastne pocet radku
@@ -80,9 +87,9 @@ class Watermark {
 					dump("Pozice bitu: " . $h . "x" . $w);
 					dump("Bit: " . $bit);
 					dump("binary WM data: " . $binaryWatermarkedData);
-					dump("WM Data: ");
-					dump($watermarkedData);
-
+					dump("WM Data: " . $watermarkedData);
+					dump("abs: " . abs($valueForWatermark - $watermarkedData));
+					dump(\DateTime::createFromFormat('U.u', $valueForWatermark / self::MULTIPLY),\DateTime::createFromFormat('U.u', $watermarkedData / self::MULTIPLY));
 				}
 				if($watermarkedData != $valueForWatermark) {
 					try {
@@ -111,7 +118,7 @@ class Watermark {
 				$v = count(array_keys($row->toArray())); //pocet atributu pro radek ktery muzu watermaknout
 				$atributeIndex = $hash % $v; // atribut radku ktery watermarknu
 				// $atributeIndex = 1; // atribut radku ktery watermarknu
-				$bitIndex = $hash % $this->lsbCandidate; // LSB bit od prava, ktery watermarku
+				$bitIndex = ($hash % $this->lsbCandidate) + self::BIT_MOVE; // LSB bit od prava, ktery watermarku
 				if($this->debug) {
 					dump($row->toArray());
 					dump("HASH: " . $hash);
@@ -120,7 +127,6 @@ class Watermark {
 					dump("lsb bit " . $bitIndex);
 				}
 
-				$i = 0;
 				$valueForWatermark = null;
 				$atributeName = null;
 				foreach ($row as $atribute => $value) {
@@ -152,7 +158,11 @@ class Watermark {
 
 		}
 
-		if($matchCount / $totalCount > $this->detectionLevel) {
+		$decision = $matchCount / $totalCount;
+		if($this->debug) {
+				dump("decision: " . $decision);
+		}
+		if($decision > $this->detectionLevel) {
 			return true;
 		}
 		return false;
@@ -220,8 +230,9 @@ class Watermark {
 		if($withSecretKey) {
 			$text = $this->secretKey . $text;
 		}
-		return hexdec(md5($text));
+		//return hexdec(md5($text));
 		//return crc32($text);
+		return crc32(md5($text));
 	}
 
 }
