@@ -28,6 +28,8 @@ class Watermark {
 
 
 	public function run(array $rows, array $numericsAtributtes) {
+		$total = 0;
+		$watermarked = 0;
 		foreach ($rows as $row) {
 
 			if($this->debug) {
@@ -40,9 +42,7 @@ class Watermark {
 
 				$v = count($numericsAtributtes); //pocet atributu pro radek ktery muzu watermaknout
 				$atributeIndex = $hash % $v; // atribut radku ktery watermarknu
-				// $atributeIndex = 1; // atribut radku ktery watermarknu
 				$bitIndex = ($hash % $this->lsbCandidate) + self::BIT_MOVE; // LSB bit od prava, ktery watermarku
-				//$bitIndex = 23;
 				if($this->debug) {
 					dump($row->toArray());
 					dump("HASH: " . $hash);
@@ -51,7 +51,7 @@ class Watermark {
 					dump("lsb bit " . $bitIndex);
 				}
 
-				$i = 0;
+				
 				$valueForWatermark = null;
 				$atributeName = $numericsAtributtes[$atributeIndex];
 				$valueForWatermark = $row[$atributeName];
@@ -93,19 +93,25 @@ class Watermark {
 				}
 				if($watermarkedData != $valueForWatermark) {
 					try {
+						dump("abs: " . abs($valueForWatermark - $watermarkedData));
+						// dump(\DateTime::createFromFormat('U.u', $valueForWatermark / self::MULTIPLY),\DateTime::createFromFormat('U.u', $watermarkedData / self::MULTIPLY));
 						$row->update([$atributeName => $watermarkedData]);
+						$watermarked++;
 					} catch(\PDOException $e) {
-						// LOG
+						echo $e->getMessage();
 					}
 				}
 		
 			}
+			$total++;
 
 		}
+
+		dump($watermarked . "/" .$total);
 	}
 
 
-	public function isDataWaterMarked(array $rows) {
+	public function isDataWaterMarked(array $rows, array $numericsAtributtes) {
 
 		$matchCount = 0;
 		$totalCount = 0;
@@ -113,11 +119,10 @@ class Watermark {
 
 			$hash = $this->createHash($row->getSignature(), true);		
 
-			if($hash % $this->fractions == 0) {
+			if($hash % $this->fractions) {
 
-				$v = count(array_keys($row->toArray())); //pocet atributu pro radek ktery muzu watermaknout
+				$v = count($numericsAtributtes); ; //pocet atributu pro radek ktery muzu watermaknout
 				$atributeIndex = $hash % $v; // atribut radku ktery watermarknu
-				// $atributeIndex = 1; // atribut radku ktery watermarknu
 				$bitIndex = ($hash % $this->lsbCandidate) + self::BIT_MOVE; // LSB bit od prava, ktery watermarku
 				if($this->debug) {
 					dump($row->toArray());
@@ -127,15 +132,10 @@ class Watermark {
 					dump("lsb bit " . $bitIndex);
 				}
 
+				
 				$valueForWatermark = null;
-				$atributeName = null;
-				foreach ($row as $atribute => $value) {
-					if($i == $atributeIndex) {
-						$valueForWatermark = $value;
-						$atributeName = $atribute;
-					}
-					$i++;					
-				}
+				$atributeName = $numericsAtributtes[$atributeIndex];
+				$valueForWatermark = $row[$atributeName];
 
 				if(!$valueForWatermark) {
 					throw new Exception("Neni co watermarkount");
@@ -157,8 +157,10 @@ class Watermark {
 			}
 
 		}
-
 		$decision = $matchCount / $totalCount;
+		dump("total: " . $totalCount . "\nmatch:" . $matchCount . "\ndecision" . $decision);
+
+		
 		if($this->debug) {
 				dump("decision: " . $decision);
 		}
